@@ -11,6 +11,8 @@ export type DigestRow = {
   runs: number;
   /** Lines with status `retry`. */
   retries: number;
+  /** Lines with status `fail`. */
+  fails: number;
   lastStatus: RunStatus;
   /** Most recent `error` logged for the job, or `null` if it never logged one. */
   lastError: string | null;

@@ -46,6 +46,7 @@ export function foldNight(night: string, text: string): Night {
         owner: line.owner,
         runs: 1,
         retries: line.status === 'retry' ? 1 : 0,
+        fails: line.status === 'fail' ? 1 : 0,
         lastStatus: line.status,
         lastError: line.error,
         firstAt: line.at,
@@ -57,6 +58,7 @@ export function foldNight(night: string, text: string): Night {
     }
     row.runs++;
     if (line.status === 'retry') row.retries++;
+    if (line.status === 'fail') row.fails++;
     if (ms < row.firstMs) {
       row.firstMs = ms;
       row.firstAt = line.at;
