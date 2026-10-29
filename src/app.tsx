@@ -20,6 +20,7 @@ export function createApp(config: RigConfig = loadConfig()) {
     ),
   );
 
+  // The page and the JSON read the same Night, so they can't disagree (ADR 0001).
   app.get('/digest/:night', (c) => {
     const name = c.req.param('night');
     const night = readNight(config.runsDir, name);
@@ -36,6 +37,13 @@ export function createApp(config: RigConfig = loadConfig()) {
         <DigestPage night={night} />
       </Layout>,
     );
+  });
+
+  app.get('/api/digest/:night', (c) => {
+    const name = c.req.param('night');
+    const night = readNight(config.runsDir, name);
+    if (!night) return c.json({ error: 'no run log for this night', night: name }, 404);
+    return c.json(night);
   });
 
   return app;
