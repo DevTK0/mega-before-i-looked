@@ -12,13 +12,15 @@ export function createApp(config: RigConfig = loadConfig()) {
 
   app.get('/health', (c) => c.json({ ok: true, lane: lane().id }));
 
-  app.get('/', (c) =>
-    c.html(
+  app.get('/', (c) => {
+    const status = readStatus(config);
+    const nights = status.nights.map((night) => ({ night, counts: readNight(config.runsDir, night)?.counts ?? null }));
+    return c.html(
       <Layout title="status" lane={lane()}>
-        <StatusBoard status={readStatus(config)} />
+        <StatusBoard status={status} nights={nights} />
       </Layout>,
-    ),
-  );
+    );
+  });
 
   // The page and the JSON read the same Night, so they can't disagree (ADR 0001).
   app.get('/digest/:night', (c) => {
