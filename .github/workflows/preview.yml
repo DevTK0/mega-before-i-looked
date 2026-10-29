@@ -1,0 +1,72 @@
+# Plan morning-digest § 3 / § 4. Saves /digest/2026-10-28 as one HTML file and deploys it to
+# this repo's GitHub Pages. The page is built here, never committed (ADR 0003, AGENTS.md).
+# The marker comes from the repo variable LANE_MARKER. For § 4, run with with_marker = false:
+# the same page with LANE_MARKER unset, uploaded over the same link.
+name: preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      with_marker:
+        description: Banner carries the lane marker (vars.LANE_MARKER). false = "no marker set".
+        type: boolean
+        default: true
+      night:
+        description: Night to preview
+        default: '2026-10-28'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - name: Save the page
+        env:
+          LANE_MARKER: ${{ inputs.with_marker && vars.LANE_MARKER || '' }}
+          NIGHT: ${{ inputs.night }}
+          PORT: '8787'
+        run: |
+          [[ "$NIGHT" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || { echo "not a night: $NIGHT"; exit 1; }
+          pnpm start > rig.log 2>&1 &
+          for i in $(seq 1 30); do curl -fs "http://localhost:$PORT/health" > /dev/null && break; sleep 1; done
+          mkdir -p _site
+          curl -fsS "http://localhost:$PORT/digest/$NIGHT" -o _site/index.html
+          kill %1 || true
+          if [ -n "$LANE_MARKER" ]; then
+            grep -qF "<span class=\"marker\">$LANE_MARKER</span>" _site/index.html
+          else
+            grep -qF '<span class="marker">no marker set</span>' _site/index.html
+          fi
+          ! grep -q '<script' _site/index.html
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
