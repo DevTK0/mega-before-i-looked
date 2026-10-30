@@ -1,8 +1,9 @@
 ---
 plan: morning-digest
-status: ready
+status: done
 owner: rook
 opened: 2026-10-29
+closed: 2026-10-30
 ---
 
 # Morning digest
@@ -77,3 +78,20 @@ page again with `LANE_MARKER` unset (the banner reads "no marker set") and uploa
 link. Move this plan to `docs/plans/done/` with its issue list.
 
 Done when: the preview link no longer shows the lane marker.
+
+## Issues
+
+| # | Issue | Blocked by | Worker | Closed |
+|---|-------|-----------|--------|--------|
+| 1 | Run log reader: DigestRow type and readNight signature | — | grok-bot executor · Grok Bot · medium | 2026-10-29 |
+| 2 | Run log reader: readNight implementation and tests | #1 | grok-bot executor · Grok Bot · medium | 2026-10-29 |
+| 3 | Digest page: GET /digest/:night | #1, #2 | grok-bot executor · Grok Bot · medium | 2026-10-29 |
+| 4 | Digest JSON: GET /api/digest/:night | #1, #2 | grok-bot executor · Grok Bot · medium | 2026-10-29 |
+| 5 | Board link: each night to its digest, with counts | #1, #2, #3 | grok-bot executor · Grok Bot · medium | 2026-10-29 |
+| 6 | Route tests for /digest and /api/digest | #3, #4 | grok-bot executor · Grok Bot · medium | 2026-10-29 |
+| 7 | Preview for review | #2, #3 | grok-bot executor · Grok Bot · medium | 2026-10-29 |
+| 8 | Clean up: preview without the lane marker, plan to done | #7 | grok-bot executor · Grok Bot · medium | 2026-10-30 |
+
+#7 was closed before the reviewer looked, reopened, and closed again once the review was in.
+The preview is built and deployed by `.github/workflows/preview.yml` (never committed); #8 re-ran
+it with `with_marker` off over the same link.
